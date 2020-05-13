@@ -1,31 +1,27 @@
 import 'dart:convert';
+import 'package:clima/models/weather_data.dart';
+import 'package:clima/screens/location_screen.dart';
+import 'package:clima/services/location.dart';
 import 'package:clima/services/networking.dart';
+import 'package:clima/services/weather_in_location.dart';
+import 'package:clima/utilities/constants.dart';
+import 'package:clima/utilities/url_api_builder.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:http/http.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class LoadingScreen extends StatefulWidget {
   @override
   _LoadingScreenState createState() => _LoadingScreenState();
 }
 
-
-
 class _LoadingScreenState extends State<LoadingScreen> {
-  final appId ='f728ac1cd706b12c2c26b0652dd36ba6';
   void getLocation() async {
-    Position pos = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-    print(pos);
-    UrlParamsBuilder builder = UrlParamsBuilder();
-    String url = builder.withPrefix('http://api.openweathermap.org/data/2.5/weather?')
-    .withApiKey(appId)
-    .withLat(pos.latitude)
-    .withLong(pos.longitude)
-    .build();
-    print(url);
-    NetworkFetcher fetcher = NetworkFetcher(url);
-    Resp resp = await fetcher.queryWeatherData();
-    print(resp.temperature);
+    Position pos = await LocationProvider().getLocation();
+    WeatherData wd = await WeatherInLocationProvider(pos).queryWeather();
+    Navigator.push(context, MaterialPageRoute(builder: (context){
+      return LocationScreen(weatherData: wd,);
+    }));
   }
 
   @override
@@ -37,13 +33,10 @@ class _LoadingScreenState extends State<LoadingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: RaisedButton(
-          onPressed: () {
-            //Get the current location
-            getLocation();
-          },
-          child: Text('Get Location'),
-        ),
+        child: SpinKitDoubleBounce(
+          color: Colors.white,
+          size: 100.0,
+        )
       ),
     );
   }
