@@ -1,7 +1,10 @@
 import 'package:clima/models/weather_data.dart';
+import 'package:clima/services/location.dart';
 import 'package:clima/services/weather.dart';
+import 'package:clima/services/weather_in_location.dart';
 import 'package:flutter/material.dart';
 import 'package:clima/utilities/constants.dart';
+import 'package:geolocator/geolocator.dart';
 
 class LocationScreen extends StatefulWidget {
   final WeatherData weatherData;
@@ -43,14 +46,22 @@ class _LocationScreenState extends State<LocationScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   FlatButton(
-                    onPressed: () {},
+                    onPressed: ()async {
+                      Position pos = await LocationProvider().getLocation();
+                      WeatherData wd = await WeatherInLocationProvider(pos).queryWeather();
+                      setState(() {
+                        weatherData = wd;
+                      });
+                    },
                     child: Icon(
                       Icons.near_me,
                       size: 50.0,
                     ),
                   ),
                   FlatButton(
-                    onPressed: () {},
+                    onPressed: ()  {
+
+                    },
                     child: Icon(
                       Icons.location_city,
                       size: 50.0,
@@ -63,7 +74,7 @@ class _LocationScreenState extends State<LocationScreen> {
                 child: Row(
                   children: <Widget>[
                     Text(
-                      weatherData.temperature.toString() + '°',
+                      weatherData.temperature.toInt().toString() + '°',
                       style: kTempTextStyle,
                     ),
                     Text(
